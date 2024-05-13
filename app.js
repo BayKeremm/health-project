@@ -23,6 +23,22 @@
  **/
 var chart = null;
 
+
+function check_current_date(date) {
+    var todayDate = new Date();
+    var dd = todayDate.getDate();
+    var mm = todayDate.getMonth() + 1;
+    var yyyy = todayDate.getFullYear();
+    if (dd < 10) dd = '0' + dd;
+    if (mm < 10) mm = '0' + mm;
+    todayDate = yyyy +'-'+ mm + '-' + dd;
+    console.log(todayDate);
+    console.log(date);
+    if (todayDate >= date) return true;
+    else return false;
+}
+
+
 function refreshSleepSchedules() {
   var select = document.getElementById('patient-select');
   var id = select.value;
@@ -45,6 +61,7 @@ function refreshSleepSchedules() {
       var x = [];
       var y = [];
       for (var i = 0; i < response.data.length; i++) {
+        var diff;
         var sleeptime = response.data[i]["sleep_time"]
         var wakeuptime = response.data[i]["wake_up_time"]
 
@@ -53,13 +70,12 @@ function refreshSleepSchedules() {
 
         var mins0 = (+a0[0]) * 60 + (+a0[1]); 
         var mins1 = (+a1[0]) * 60 + (+a1[1]); 
-
-        var diff = (24 - mins0/60) + mins1/60
-
+        if (mins0 - mins1 > 0) diff = (24 - mins0 / 60) + mins1 / 60;
+        else diff = Math.abs(mins0 - mins1) / 60;
         console.log('diff:', diff);
         console.log('sleep time:', mins0);
         console.log('wakeup time:', mins1);
-        x.push(response.data[i]['recorded_at']);
+        x.push(response.data[i]['sleep_date']);
         y.push(diff)
       }
       console.log('X:', x); // Log X data
@@ -148,13 +164,16 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('sleep-schedule-button').addEventListener('click', function() {
     var sleepTime = document.getElementById('sleep-time-input').value;
     var wakeUpTime = document.getElementById('wake-up-time-input').value;
-    if (sleepTime == '' || wakeUpTime == '') {
+    var bedtimeDate = document.getElementById('bedtime-date').value;
+    if (sleepTime == '' || wakeUpTime == '' || bedtimeDate == '') {
       alert('Please provide both sleep time and wake up time');
-    } else {
+    } else if (!check_current_date(bedtimeDate)) alert("Future bedtime date are not allowed");
+    else {
       axios.post('record-sleep', {
         id: document.getElementById('patient-select').value,
         sleep_time: sleepTime,
-        wake_up_time: wakeUpTime
+        wake_up_time: wakeUpTime,
+        bedtime_date: bedtimeDate
       })
         .then(function(response) {
           document.getElementById('sleep-time-input').value = '';

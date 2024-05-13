@@ -103,6 +103,7 @@ def record_sleep_schedule():
         'patient_id': body['id'],
         'sleep_time': body['sleep_time'],
         'wake_up_time': body['wake_up_time'],
+        'sleep_date': body['bedtime_date'],
         'recorded_at': now,
     })
     # END STRIP
@@ -143,7 +144,9 @@ def list_sleep_schedules():
             'recorded_at': schedule['value']['recorded_at'],
             'sleep_time': schedule['value']['sleep_time'],
             'wake_up_time': schedule['value']['wake_up_time'],
+            'sleep_date': schedule['value']['sleep_date']
         })
+    result = sorted(result, key=lambda x: x['sleep_date'])
     # END STRIP
 
     return Response(json.dumps(result), mimetype='application/json')
