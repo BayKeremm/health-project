@@ -40,10 +40,10 @@ function check_current_date(date) {
 
 
 function refreshSleepSchedules() {
-  var select = document.getElementById('patient-select');
+  var select = document.getElementById('user-select');
   var id = select.value;
   if (id === '') {
-    console.log('No patient');
+    console.log('No user');
     document.getElementById('sleep-schedule-div').style.visibility = 'hidden';
     return;
   }
@@ -89,12 +89,12 @@ function refreshSleepSchedules() {
     });
 }
 
-function refreshPatients() {
-  axios.get('patients', {
+function refreshUsers() {
+  axios.get('users', {
     responseType: 'json'
   })
     .then(function(response) {
-      var select = document.getElementById('patient-select');
+      var select = document.getElementById('user-select');
 
       while (select.options.length > 0) {
         select.options.remove(0);
@@ -108,7 +108,7 @@ function refreshPatients() {
       refreshSleepSchedules();
     })
     .catch(function(response) {
-      alert('URI /patients not properly implemented in Flask');
+      alert('URI /users not properly implemented in Flask');
     });
 }
 
@@ -139,24 +139,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  refreshPatients();
+  refreshUsers();
 
-  document.getElementById('patient-select').addEventListener('change', refreshSleepSchedules);
+  document.getElementById('user-select').addEventListener('change', refreshSleepSchedules);
 
-  document.getElementById('patient-button').addEventListener('click', function() {
-    var name = document.getElementById('patient-input').value;
+  document.getElementById('user-button').addEventListener('click', function() {
+    var name = document.getElementById('user-input').value;
     if (name == '') {
       alert('No name was provided');
     } else {
-      axios.post('create-patient', {
+      axios.post('create-user', {
         name: name
       })
         .then(function(response) {
-          document.getElementById('patient-input').value = '';
-          refreshPatients();
+          document.getElementById('user-input').value = '';
+          refreshUsers();
         })
         .catch(function(response) {
-          alert('URI /create-patient not properly implemented in Flask');
+          alert('URI /create-user not properly implemented in Flask');
         });
     }
   });
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (!check_current_date(bedtimeDate)) alert("Future bedtime date are not allowed");
     else {
       axios.post('record-sleep', {
-        id: document.getElementById('patient-select').value,
+        id: document.getElementById('user-select').value,
         sleep_time: sleepTime,
         wake_up_time: wakeUpTime,
         bedtime_date: bedtimeDate
