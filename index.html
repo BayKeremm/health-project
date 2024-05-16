@@ -74,8 +74,9 @@
       display: block;
       margin: 20px auto;
     }
-        /* Styles for the modal */
-        .modal {
+    
+    /* Styles for the modal */
+    .modal {
       display: none; /* Hidden by default */
       position: fixed; /* Stay in place */
       z-index: 1; /* Sit on top */
@@ -110,6 +111,15 @@
       text-decoration: none;
       cursor: pointer;
     }
+
+    .advice {
+      background-color: #e7f3fe;
+      border-left: 6px solid #2196F3;
+      margin: 20px 0;
+      padding: 20px;
+      font-size: 1.2em;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -124,13 +134,11 @@
       <button id="user-button">Create</button>
     </div>
 
-
     <div>
       <label for="user-select">Choose a user:</label>
       <select name="user-select" id="user-select">
         <option value="">Select a user</option> 
-    </select>
-
+      </select>
     </div>
 
     <div id="sleep-schedule-div" style="visibility:hidden">
@@ -160,13 +168,16 @@
         </div>
       </div>
       <button id="export-button">Export Sleep Data as JSON</button>
-    <div style="position: relative; height:40vh;">
-      <canvas id="sleep-schedule"></canvas>
-    </div>
-    </div>
+      <div style="position: relative; height:40vh;">
+        <canvas id="sleep-schedule"></canvas>
+      </div>
 
-
+      <div class="advice" id="advice">
+        <p><strong>Did you know?</strong> <span id="advice-text"></span></p>
+      </div>
+    </div>
   </div>
+  
   <script>
     // Get the modal
     var modal = document.getElementById('goal-modal');
@@ -193,9 +204,29 @@
         modal.style.display = 'none';
       }
     }
+
+    // Sleep advice data
+    const adviceList = [
+      "Getting enough sleep helps improve memory and cognitive function.",
+      "Adults should aim for 7-9 hours of sleep per night.",
+      "Consistent sleep helps regulate mood and reduce stress.",
+      "Poor sleep can increase the risk of cardiovascular disease.",
+      "Adequate sleep boosts the immune system and helps fight off infections.",
+      "Children and teenagers need more sleep than adults for healthy growth and development.",
+      "Good sleep hygiene, like a regular sleep schedule, improves sleep quality.",
+      "Lack of sleep can impair motor skills and increase the risk of accidents.",
+      "Deep sleep is crucial for physical restoration and muscle repair.",
+      "Quality sleep can enhance problem-solving skills and creativity."
+    ];
+
+    // Display a random piece of advice
+    function displayRandomAdvice() {
+      const randomIndex = Math.floor(Math.random() * adviceList.length);
+      document.getElementById('advice-text').innerText = adviceList[randomIndex];
+    }
+
+    // Call the function to display a random piece of advice when the page loads
+    window.onload = displayRandomAdvice;
   </script>
-
-
-  </div>
 </body>
 </html>
