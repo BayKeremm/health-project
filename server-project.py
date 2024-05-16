@@ -92,9 +92,22 @@ def create_user():
 @app.route('/record-sleep', methods=['POST'])
 def record_sleep_schedule():
     # "request.get_json()" necessitates the client to have set "Content-Type" to "application/json"
+    userId = request.args.get('id')
     body = json.loads(request.get_data())
 
     now = datetime.datetime.now().isoformat()  # Get current time
+
+    sleep_schedules = client.executeView('ehr', 'sleep_schedules', 'by_user_id', userId)
+
+    f = False
+    key = ""
+    for schedule in sleep_schedules:
+        if body['bedtime_date'] == schedule['value']['sleep_date']:
+            client.deleteDocument('ehr', schedule['id'])
+            #try:
+                #client.deleteDocument('ehr', schedule['id'])
+            #except:
+                #pass
 
     # TODO
     # BEGIN STRIP
@@ -218,6 +231,7 @@ def delete_sleep_data():
     for sleep_data in sleep_data_ids:
         client.deleteDocument('ehr', sleep_data)
     return Response('Deleted sleep data', 200)
+
 
 
 if __name__ == '__main__':
