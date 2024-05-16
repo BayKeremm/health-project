@@ -141,6 +141,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
   refreshUsers();
 
+document.getElementById('export-button').addEventListener('click', function() {
+  var select = document.getElementById('user-select');
+  var id = select.value;
+  if (id === '') {
+    alert('No user selected');
+    return;
+  }
+
+  axios.get('sleep-schedules', {
+    params: {
+      id: id
+    },
+    responseType: 'json'
+  })
+    .then(function(response) {
+      var sleepData = JSON.stringify(response.data);
+      var blob = new Blob([sleepData], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'sleep_data.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    })
+    .catch(function(response) {
+      alert('Error fetching sleep data');
+    });
+});
+
   document.getElementById('user-select').addEventListener('change', refreshSleepSchedules);
 
   document.getElementById('user-button').addEventListener('click', function() {
@@ -186,3 +217,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+

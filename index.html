@@ -1,45 +1,111 @@
 <!DOCTYPE html>
-
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Sleep Schedule Tracker in CouchDB</title>
+<head>
+  <meta charset="utf-8">
+  <title>Sleep Schedule Tracker in CouchDB</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="app.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="app.js"></script>
-  </head>
-  <body>
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="time"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+    }
+
+    #export-button {
+      display: block;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
     <h1>Sleep Schedule Tracker in CouchDB</h1>
 
     <h2>Create a new user</h2>
 
-    <p id="user-div">
+    <div id="user-div">
       <label for="user-input">User's name:</label>
-      <input type="text" label="user-input" id="user-input"></input>
+      <input type="text" id="user-input">
       <button id="user-button">Create</button>
-    </p>
+    </div>
 
     <h2>Sleep Schedule of one user</h2>
 
-    <p>
+    <div>
       <label for="user-select">Choose a user:</label>
-      <select name="user-select" id="user-select">
-      </select>
-    </p>
+      <select name="user-select" id="user-select"></select>
+    </div>
 
-    <p style="visibility:hidden" id="sleep-schedule-div">
+    <div id="sleep-schedule-div" style="visibility:hidden">
       <label for="sleep-time-input">Record sleep time:</label>
-      <input type="time" label="sleep-time-input" id="sleep-time-input"></input>
+      <input type="time" id="sleep-time-input">
       <label for="wake-up-time-input">Wake up time:</label>
-      <input type="time" label="wake-up-time-input" id="wake-up-time-input"></input>
+      <input type="time" id="wake-up-time-input">
       <label for="bedtime-date">Bedtime Date</label>
-      <input type="date" placeholder="yyyy-mm-dd" label="bedtime-date" id="bedtime-date"></input>
+      <input type="date" placeholder="yyyy-mm-dd" id="bedtime-date">
       <button id="sleep-schedule-button">Add</button>
-    </p>
+    </div>
 
-    <div style="position: relative; height:40vh; width:80vw">
+    <div style="position: relative; height:40vh;">
       <canvas id="sleep-schedule"></canvas>
     </div>
-  </body>
+
+    <button id="export-button">Export Sleep Data as JSON</button>
+  </div>
+</body>
 </html>
