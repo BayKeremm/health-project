@@ -195,5 +195,30 @@ def list_sleep_schedules():
     return Response(json.dumps(result), mimetype='application/json')
 
 
+@app.route('/sleep-data-delete', methods=['GET'])
+def get_sleep_data():
+    userId = request.args.get('id')
+    result = list()
+    sleep_datas = client.executeView('ehr', 'sleep_schedules', 'by_user_id', userId)
+
+    for schedule in sleep_datas:
+        result.append({
+            'id': schedule['value']['_id'],
+            'sleep_time': schedule['value']['sleep_time'],
+            'wake_up_time': schedule['value']['wake_up_time'],
+            'sleep_date': schedule['value']['sleep_date']
+        })
+    result = sorted(result, key=lambda x: x['sleep_date'])
+    return Response(json.dumps(result), mimetype='application/json')
+
+
+@app.route('/to-delete', methods=['POST'])
+def delete_sleep_data():
+    sleep_data_ids = json.loads(request.get_data())['id']
+    for sleep_data in sleep_data_ids:
+        client.deleteDocument('ehr', sleep_data)
+    return Response('Deleted sleep data', 200)
+
+
 if __name__ == '__main__':
     app.run()

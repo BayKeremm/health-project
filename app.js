@@ -15,6 +15,59 @@ function check_current_date(date) {
     if (todayDate >= date) return true;
     else return false;
 }
+
+function openDeleteDataModal() {
+    var toDeleteDataModal = document.getElementById('delete-data-modal');
+    var toDeleteDataButton = document.getElementById('set-delete-data-button');
+    var spanDeleteData = document.getElementsByClassName('close')[1];
+    var select = document.getElementById('user-select');
+    var id = select.value;
+    toDeleteDataModal.style.display = 'block';
+    axios.get('sleep-data-delete', {
+        params: {
+            id: id
+        },
+        responseType: 'json'
+    }).then((resp) => {
+        console.log('Reception: ', resp.data)
+        var parentCheckBox = document.getElementById("checkbox-div");
+        resp.data.forEach((el) => {
+            var checkBox = document.createElement('input');
+            checkBox.type = 'checkbox';
+            checkBox.name = 'name';
+            checkBox.value = el['id'];
+            checkBox.id = el['id'];
+            var div = document.createElement('div');
+            var label = document.createElement('label');
+            label.htmlFor = checkBox.id;
+            label.appendChild(document.createTextNode(el['sleep_date'] + " - " + el['sleep_time'] + " - " + el['wake_up_time']));
+            div.appendChild(checkBox);
+            div.appendChild(label);
+            parentCheckBox.appendChild(div);
+        });
+    }).catch(() => {
+        alert('URI /sleep-data-delete not properly implemented in Flask');
+    });
+}
+
+function deleteData() {
+    var parentNode = document.getElementById('checkbox-div');
+    var arrayId = [];
+    parentNode.childNodes.forEach((el) => {
+        var current = el.childNodes[0];
+        if (current.checked) arrayId.push(current.value);
+    });
+    console.log('children of checkbox-div: ', arrayId);
+    axios.post('to-delete', {
+        id: arrayId
+    }).then((resp) => {
+        document.getElementById('delete-data-modal').style.display = 'none';
+        document.getElementById('checkbox-div').innerHTML = '';
+        refreshSleepSchedules();
+    }).catch(() => alert('URI /to-delete not properly implemented in Flask'));
+}
+
+
 async function getSleepGoal() {
     var select = document.getElementById('user-select');
     var id = select.value;

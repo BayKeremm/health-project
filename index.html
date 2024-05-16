@@ -171,6 +171,18 @@
       <div style="position: relative; height:40vh;">
         <canvas id="sleep-schedule"></canvas>
       </div>
+      <div class="centered-button">
+          <button style="background-color: #f44336" id="set-delete-data-button" onclick="openDeleteDataModal()">Delete Data</button>
+      </div>
+      <!-- Modal to view and delete existing data -->
+      <div id="delete-data-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Select Data to be deleted</h2>
+            <div id="checkbox-div"></div>
+            <button style="background-color: #f44336" id="delete-data-confirm" onclick="deleteData()">Delete</button>
+        </div>
+      </div>
 
       <div class="advice" id="advice">
         <p><strong>Did you know?</strong> <span id="advice-text"></span></p>
@@ -228,5 +240,21 @@
     // Call the function to display a random piece of advice when the page loads
     window.onload = displayRandomAdvice;
   </script>
+<script>
+    var toDeleteModal = document.getElementById('delete-data-modal');
+    var spanDelete = document.getElementsByClassName('close')[1];
+    spanDelete.onclick = () => {
+        toDeleteModal.style.display = 'none';
+        var div = document.getElementById("checkbox-div");
+        div.innerHTML = '';
+    }
+    window.onclick = (event) => {
+        if (event.target == toDeleteModal) {
+            toDeleteModal.style.display = 'none';
+            var div = document.getElementById("checkbox-div");
+            div.innerHTML = '';
+        }
+    }
+</script>
 </body>
 </html>
