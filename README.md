@@ -1,0 +1,2 @@
+- To run the project `sh run_project.sh`
+- to stop the container `docker stop my_couchdb`

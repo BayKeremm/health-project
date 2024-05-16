@@ -1,0 +1,6 @@
+Added redord-goal endpoint
+now add the UI to set goals and udpate the chart
+
+Lastly added sleep wake up time on chart, now check whether it is in the given sleep goal range
+
+RED BLUE NOT WORKING FOR THE GRAPH

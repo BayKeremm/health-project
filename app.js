@@ -1,28 +1,6 @@
-/**
- * Copyright (c) 2024, Sebastien Jodogne, ICTEAM UCLouvain, Belgium
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use, copy,
- * modify, merge, publish, distribute, sublicense, and/or sell copies
- * of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
- * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
- * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- **/
 var chart = null;
-
+var global_start_goal = null;
+var global_end_goal = null;
 
 function check_current_date(date) {
     var todayDate = new Date();
@@ -31,158 +9,332 @@ function check_current_date(date) {
     var yyyy = todayDate.getFullYear();
     if (dd < 10) dd = '0' + dd;
     if (mm < 10) mm = '0' + mm;
-    todayDate = yyyy +'-'+ mm + '-' + dd;
+    todayDate = yyyy + '-' + mm + '-' + dd;
     console.log(todayDate);
     console.log(date);
     if (todayDate >= date) return true;
     else return false;
 }
+async function getSleepGoal() {
+    var select = document.getElementById('user-select');
+    var id = select.value;
+    if (id === '') {
+      console.log('No user selected');
+      return;
+    }
+  
+    try {
+        const response = await axios.get('/get-goal', {
+            params: {
+                id: id
+            },
+            responseType: 'json'
+        });
+
+        var goal = response.data;
+        if (goal) {
+            global_end_goal = goal.sleep_goal_end;
+            global_start_goal = goal.sleep_goal_start;
+            document.getElementById('current-goal').innerText = `Current Sleep Goal: ${goal.sleep_goal_start} - ${goal.sleep_goal_end}`;
+        } else {
+            document.getElementById('current-goal').innerText = 'No sleep goal set for this user';
+        }
+    } catch (error) {
+        console.error('Error fetching sleep goal:', error);
+        // You can display an error message to the user if needed
+    }
+    refreshSleepSchedules();
+}
+
+
+
+function checkSleepGoal(sleepTime, wakeUpTime) {
+    var withinRange = false;
+
+    if (global_end_goal != null && global_start_goal != null) {
+        // Convert sleep time and wake-up time to minutes
+        var sleepHour = parseInt(sleepTime.split(':')[0]);
+        var sleepMinute = parseInt(sleepTime.split(':')[1]);
+        var sleepTimeInMinutes = sleepHour * 60 + sleepMinute;
+
+        var wakeUpHour = parseInt(wakeUpTime.split(':')[0]);
+        var wakeUpMinute = parseInt(wakeUpTime.split(':')[1]);
+        var wakeUpTimeInMinutes = wakeUpHour * 60 + wakeUpMinute;
+
+        // Convert user sleep goal start time and end time to minutes
+        var userSleepGoalStartHour = parseInt(global_start_goal.split(':')[0]);
+        var userSleepGoalStartMinute = parseInt(global_start_goal.split(':')[1]);
+        var userSleepGoalStartTimeInMinutes = userSleepGoalStartHour * 60 + userSleepGoalStartMinute;
+
+        var userSleepGoalEndHour = parseInt(global_end_goal.split(':')[0]);
+        var userSleepGoalEndMinute = parseInt(global_end_goal.split(':')[1]);
+        var userSleepGoalEndTimeInMinutes = userSleepGoalEndHour * 60 + userSleepGoalEndMinute;
+
+        // Check if sleep time falls within the range of user's sleep goal
+        var c1 = (sleepTimeInMinutes >= userSleepGoalStartTimeInMinutes - 15 && sleepTimeInMinutes <= userSleepGoalStartTimeInMinutes + 15) ;
+        var c2 =     (wakeUpTimeInMinutes >= userSleepGoalEndTimeInMinutes - 15 && wakeUpTimeInMinutes <= userSleepGoalEndTimeInMinutes + 15);
+        withinRange =c1 && c2;
+    }
+
+    return withinRange;
+}
 
 
 function refreshSleepSchedules() {
-  var select = document.getElementById('patient-select');
-  var id = select.value;
-  if (id === '') {
-    console.log('No patient');
-    document.getElementById('sleep-schedule-div').style.visibility = 'hidden';
-    return;
-  }
+    var select = document.getElementById('user-select');
+    var id = select.value;
+    if (id === '') {
+        console.log('No user');
+        document.getElementById('sleep-schedule-div').style.visibility = 'hidden';
+        return;
+    }
 
-  document.getElementById('sleep-schedule-div').style.visibility = 'visible';
+    document.getElementById('sleep-schedule-div').style.visibility = 'visible';
 
-  axios.get('sleep-schedules', {
-    params: {
-      id: id
-    },
-    responseType: 'json'
-  })
-    .then(function(response) {
-      console.log('Received data:', response.data); // Log received data
-      var x = [];
-      var y = [];
-      for (var i = 0; i < response.data.length; i++) {
-        var diff;
-        var sleeptime = response.data[i]["sleep_time"]
-        var wakeuptime = response.data[i]["wake_up_time"]
+    axios.get('sleep-schedules', {
+            params: {
+                id: id
+            },
+            responseType: 'json'
+        })
+        .then(function(response) {
+            console.log('Received data:', response.data); // Log received data
+            var x = [];
+            var y = [];
+            var sleepTime = [];
+            var wakeUpTime = [];
+            var colors = [];
+            for (var i = 0; i < response.data.length; i++) {
+                var diff;
+                var sleeptime = response.data[i]["sleep_time"]
+                var wakeuptime = response.data[i]["wake_up_time"]
 
-        var a0 = sleeptime.split(':')
-        var a1 = wakeuptime.split(':')
+                var a0 = sleeptime.split(':')
+                var a1 = wakeuptime.split(':')
 
-        var mins0 = (+a0[0]) * 60 + (+a0[1]); 
-        var mins1 = (+a1[0]) * 60 + (+a1[1]); 
-        if (mins0 - mins1 > 0) diff = (24 - mins0 / 60) + mins1 / 60;
-        else diff = Math.abs(mins0 - mins1) / 60;
-        console.log('diff:', diff);
-        console.log('sleep time:', mins0);
-        console.log('wakeup time:', mins1);
-        x.push(response.data[i]['sleep_date']);
-        y.push(diff)
-      }
-      console.log('X:', x); // Log X data
-      console.log('Y:', y); // Log Y data
-      chart.data.labels = x;
-      chart.data.datasets[0].data = y;
-      chart.update();
-    })
-    .catch(function(response) {
-      alert('URI /sleep-schedules not properly implemented in Flask');
-    });
+                var mins0 = (+a0[0]) * 60 + (+a0[1]);
+                var mins1 = (+a1[0]) * 60 + (+a1[1]);
+                if (mins0 - mins1 > 0) diff = (24 - mins0 / 60) + mins1 / 60;
+                else diff = Math.abs(mins0 - mins1) / 60;
+                console.log('diff:', diff);
+                console.log('sleep time:', mins0);
+                console.log('wakeup time:', mins1);
+                x.push(response.data[i]['sleep_date']);
+                y.push(diff);
+                sleepTime.push(sleeptime);
+                wakeUpTime.push(wakeuptime);
+                var meetsGoal = checkSleepGoal(sleeptime, wakeuptime);
+                colors.push(meetsGoal ? 'rgba(54, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)');
+            }
+            console.log('X:', x); // Log X data
+            console.log('Y:', y); // Log Y data
+            chart.data.labels = x;
+            chart.data.datasets[0].data = y;
+            chart.data.datasets[0].sleepTime = sleepTime; // Storing sleep times with dataset
+            chart.data.datasets[0].wakeUpTime = wakeUpTime; // Storing wake up times with dataset
+            chart.data.datasets[0].backgroundColor = colors;
+            chart.update();
+        })
+        .catch(function(response) {
+            alert('URI /sleep-schedules not properly implemented in Flask');
+        });
 }
-
-function refreshPatients() {
-  axios.get('patients', {
-    responseType: 'json'
-  })
+function refreshUsers() {
+    axios.get('users', {
+      responseType: 'json'
+    })
     .then(function(response) {
-      var select = document.getElementById('patient-select');
-
-      while (select.options.length > 0) {
-        select.options.remove(0);
-      }
-
+      var select = document.getElementById('user-select');
+  
+      // Clear existing options
+      select.innerHTML = '';
+  
+      // Add empty option
+      var emptyOption = document.createElement('option');
+      emptyOption.value = '';
+      emptyOption.textContent = 'Select a user';
+      select.appendChild(emptyOption);
+  
+      // Add options for each user
       for (var i = 0; i < response.data.length; i++) {
         var id = response.data[i]['id'];
         var name = response.data[i]['name'];
-        select.appendChild(new Option(name, id));
+        var option = document.createElement('option');
+        option.value = id;
+        option.textContent = name;
+        select.appendChild(option);
       }
-      refreshSleepSchedules();
+  
     })
     .catch(function(response) {
-      alert('URI /patients not properly implemented in Flask');
+      alert('URI /users not properly implemented in Flask');
     });
-}
+  }
+
+
 
 document.addEventListener('DOMContentLoaded', function() {
-  chart = new Chart(document.getElementById('sleep-schedule'), {
-    type: 'bar',
-    data: {
-      labels: [],
-      datasets: [{
-        label: 'Sleep Schedule',
-        data: [],
-        backgroundColor: 'rgba(54, 162, 235, 0.5)'
-      }]
-    },
-    options: {
-      animation: {
-        duration: 0 // Disable animations
-      },
-      scales: {
-        x: {
-          ticks: {
-            // Rotate the X label
-            maxRotation: 45,
-            minRotation: 45
-          }
+
+    chart = new Chart(document.getElementById('sleep-schedule'), {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Sleep Schedule',
+                data: [],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+            }]
+        },
+        options: {
+            animation: {
+                duration: 0 // Disable animations
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    },
+                    ticks: {
+                        // Rotate the X label
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                },
+
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var sleepTime = context.dataset.sleepTime[context.dataIndex];
+                            var wakeUpTime = context.dataset.wakeUpTime[context.dataIndex];
+                            return `Sleep Time: ${sleepTime}, Wake-up Time: ${wakeUpTime}`;
+                        }
+                    }
+                }
+            }
         }
-      }
-    }
-  });
+    });
+    refreshUsers();
 
-  refreshPatients();
+    document.getElementById('user-select').addEventListener('change', getSleepGoal);
+    document.getElementById('user-select').addEventListener('change', refreshSleepSchedules);
 
-  document.getElementById('patient-select').addEventListener('change', refreshSleepSchedules);
 
-  document.getElementById('patient-button').addEventListener('click', function() {
-    var name = document.getElementById('patient-input').value;
-    if (name == '') {
-      alert('No name was provided');
-    } else {
-      axios.post('create-patient', {
-        name: name
-      })
-        .then(function(response) {
-          document.getElementById('patient-input').value = '';
-          refreshPatients();
-        })
-        .catch(function(response) {
-          alert('URI /create-patient not properly implemented in Flask');
-        });
-    }
-  });
 
-  document.getElementById('sleep-schedule-button').addEventListener('click', function() {
-    var sleepTime = document.getElementById('sleep-time-input').value;
-    var wakeUpTime = document.getElementById('wake-up-time-input').value;
-    var bedtimeDate = document.getElementById('bedtime-date').value;
-    if (sleepTime == '' || wakeUpTime == '' || bedtimeDate == '') {
-      alert('Please provide both sleep time and wake up time');
-    } else if (!check_current_date(bedtimeDate)) alert("Future bedtime date are not allowed");
-    else {
-      axios.post('record-sleep', {
-        id: document.getElementById('patient-select').value,
-        sleep_time: sleepTime,
-        wake_up_time: wakeUpTime,
-        bedtime_date: bedtimeDate
-      })
-        .then(function(response) {
-          document.getElementById('sleep-time-input').value = '';
-          document.getElementById('wake-up-time-input').value = '';
-          refreshSleepSchedules();
-        })
-        .catch(function(response) {
-          alert('URI /record-sleep not properly implemented in Flask');
-        });
-    }
-  });
+    document.getElementById('user-button').addEventListener('click', function() {
+        var name = document.getElementById('user-input').value;
+        if (name == '') {
+            alert('No name was provided');
+        } else {
+            axios.post('create-user', {
+                    name: name
+                })
+                .then(function(response) {
+                    document.getElementById('user-input').value = '';
+                    refreshUsers();
+                })
+                .catch(function(response) {
+                    alert('URI /create-user not properly implemented in Flask');
+                });
+        }
+    });
+
+
+    document.getElementById('export-button').addEventListener('click', function() {
+        var select = document.getElementById('user-select');
+        var id = select.value;
+        if (id === '') {
+            alert('No user selected');
+            return;
+        }
+
+        axios.get('sleep-schedules', {
+                params: {
+                    id: id
+                },
+                responseType: 'json'
+            })
+            .then(function(response) {
+                var sleepData = JSON.stringify(response.data);
+                var blob = new Blob([sleepData], {
+                    type: 'application/json'
+                });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'sleep_data.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            })
+            .catch(function(response) {
+                alert('Error fetching sleep data');
+            });
+    });
+
+    document.getElementById('sleep-schedule-button').addEventListener('click', function() {
+        var sleepTime = document.getElementById('sleep-time-input').value;
+        var wakeUpTime = document.getElementById('wake-up-time-input').value;
+        var bedtimeDate = document.getElementById('bedtime-date').value;
+        if (sleepTime == '' || wakeUpTime == '' || bedtimeDate == '') {
+            alert('Please provide both sleep time and wake up time');
+        } else if (!check_current_date(bedtimeDate)) alert("Future bedtime date are not allowed");
+        else {
+            axios.post('record-sleep', {
+                    id: document.getElementById('user-select').value,
+                    sleep_time: sleepTime,
+                    wake_up_time: wakeUpTime,
+                    bedtime_date: bedtimeDate
+                })
+                .then(function(response) {
+                    document.getElementById('sleep-time-input').value = '';
+                    document.getElementById('wake-up-time-input').value = '';
+                    refreshSleepSchedules();
+                })
+                .catch(function(response) {
+                    alert('URI /record-sleep not properly implemented in Flask');
+                });
+        }
+    });
+
+    document.getElementById('save-goal-button').addEventListener('click', function() {
+        var goalStart = document.getElementById('goal-start').value;
+        var goalEnd = document.getElementById('goal-end').value;
+
+        // Post the sleep goal to the server
+        axios.post('record-goal', {
+                id: document.getElementById('user-select').value,
+                sleep_goal_start: goalStart,
+                sleep_goal_end: goalEnd
+            })
+            .then(function(response) {
+                // Handle success
+                console.log('Sleep goal saved successfully:', response.data);
+                // Update the displayed current goal
+                document.getElementById('current-goal').innerText = `Current Sleep Goal: ${goalStart} - ${goalEnd}`;
+
+                // Optionally, clear input fields
+                document.getElementById('goal-start').value = '';
+                document.getElementById('goal-end').value = '';
+                // You can close the modal here if needed
+                document.getElementById('goal-modal').style.display = 'none';
+                getSleepGoal();
+                refreshSleepSchedules();
+            })
+            .catch(function(error) {
+                // Handle error
+                console.error('Error saving sleep goal:', error);
+                // You can display an error message to the user if needed
+            });
+    });
+
 });
