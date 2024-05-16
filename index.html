@@ -114,7 +114,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Sleep Schedule Tracker in CouchDB</h1>
+    <h1>Sleep Schedule Tracker</h1>
 
     <h2>Create a new user</h2>
 
@@ -124,11 +124,13 @@
       <button id="user-button">Create</button>
     </div>
 
-    <h2>Sleep Schedule of one user</h2>
 
     <div>
       <label for="user-select">Choose a user:</label>
-      <select name="user-select" id="user-select"></select>
+      <select name="user-select" id="user-select">
+        <option value="">Select a user</option> 
+    </select>
+
     </div>
 
     <div id="sleep-schedule-div" style="visibility:hidden">
@@ -139,6 +141,7 @@
       <label for="bedtime-date">Bedtime Date</label>
       <input type="date" placeholder="yyyy-mm-dd" id="bedtime-date">
       <button id="sleep-schedule-button">Add</button>
+      <p id="current-goal"></p>
       <!-- Button to open the modal for setting sleep goal -->
       <div class="centered-button">
         <button id="set-goal-button">Set Sleep Goal</button>
@@ -157,11 +160,11 @@
         </div>
       </div>
       <button id="export-button">Export Sleep Data as JSON</button>
-    </div>
-
     <div style="position: relative; height:40vh;">
       <canvas id="sleep-schedule"></canvas>
     </div>
+    </div>
+
 
   </div>
   <script>
