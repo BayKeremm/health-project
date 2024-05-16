@@ -1,8 +1,32 @@
+
+// Advice Part
+const adviceList = [
+      "Getting enough sleep helps improve memory and cognitive function.",
+      "Adults should aim for 7-9 hours of sleep per night.",
+      "Consistent sleep helps regulate mood and reduce stress.",
+      "Poor sleep can increase the risk of cardiovascular disease.",
+      "Adequate sleep boosts the immune system and helps fight off infections.",
+      "Children and teenagers need more sleep than adults for healthy growth and development.",
+      "Good sleep hygiene, like a regular sleep schedule, improves sleep quality.",
+      "Lack of sleep can impair motor skills and increase the risk of accidents.",
+      "Deep sleep is crucial for physical restoration and muscle repair.",
+      "Quality sleep can enhance problem-solving skills and creativity."
+];    // Sleep Advice Data
+
 var chart = null;
 var global_start_goal = null;
 var global_end_goal = null;
 var month = 0;
 
+
+// Display a Random Piece of Advice
+function displayRandomAdvice() {
+    const randomIndex = Math.floor(Math.random() * adviceList.length);
+    document.getElementById('advice-text').innerText = adviceList[randomIndex];
+}
+
+
+// Modals buttons and listener
 function check_current_date(date) {
     var todayDate = new Date();
     var dd = todayDate.getDate();
@@ -11,11 +35,25 @@ function check_current_date(date) {
     if (dd < 10) dd = '0' + dd;
     if (mm < 10) mm = '0' + mm;
     todayDate = yyyy + '-' + mm + '-' + dd;
-    console.log(todayDate);
-    console.log(date);
-    if (todayDate >= date) return true;
-    else return false;
+    return todayDate >= date;
 }
+
+
+function deleteDataModalOnClickSpan() {
+    document.getElementById('delete-data-modal').style.display = 'none';
+    document.getElementById('checkbox-div').innerHTML = '';
+}
+
+
+function goalModalOnClickSpan() {
+    document.getElementById('goal-modal').style.display = 'none';
+}
+
+
+function openGoalModal() {
+    document.getElementById('goal-modal').style.display = 'block';
+}
+
 
 function openDeleteDataModal() {
     var toDeleteDataModal = document.getElementById('delete-data-modal');
@@ -30,7 +68,6 @@ function openDeleteDataModal() {
         },
         responseType: 'json'
     }).then((resp) => {
-        console.log('Reception: ', resp.data)
         var parentCheckBox = document.getElementById("checkbox-div");
         resp.data.forEach((el) => {
             var checkBox = document.createElement('input');
@@ -51,6 +88,7 @@ function openDeleteDataModal() {
     });
 }
 
+
 function deleteData() {
     var parentNode = document.getElementById('checkbox-div');
     var arrayId = [];
@@ -58,7 +96,6 @@ function deleteData() {
         var current = el.childNodes[0];
         if (current.checked) arrayId.push(current.value);
     });
-    console.log('children of checkbox-div: ', arrayId);
     axios.post('to-delete', {
         id: arrayId
     }).then((resp) => {
@@ -319,6 +356,7 @@ function generateCalendar() {
 //}
 
 document.addEventListener('DOMContentLoaded', function() {
+    displayRandomAdvice();
     var chartData = {
         labels: [],
         datasets: [{
@@ -518,3 +556,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 });
+
+
+// Better to use this kind of listener instead of window.onclick = ...
+window.addEventListener('click', (event) => {
+    if (event.target == document.getElementById('goal-modal')) document.getElementById('goal-modal').style.display = 'none';
+    else if (event.target == document.getElementById('delete-data-modal')) {
+        document.getElementById('delete-data-modal').style.display = 'none';
+        document.getElementById('checkbox-div').innerHTML = '';
+    }
+})
