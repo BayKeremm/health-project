@@ -5,6 +5,7 @@
   <title>Sleep Schedule Tracker in CouchDB</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.1.1"></script>
   <script src="app.js"></script>
   <style>
     body {
@@ -168,9 +169,15 @@
         </div>
       </div>
       <button id="export-button">Export Sleep Data as JSON</button>
-      <div style="position: relative; height:40vh;">
+
+       <div id="calendar"></div>
+
+
+
+      <div style="position: relative; height:40vh">
         <canvas id="sleep-schedule"></canvas>
       </div>
+
       <div class="centered-button">
           <button style="background-color: #f44336" id="set-delete-data-button" onclick="openDeleteDataModal()">Delete Data</button>
       </div>

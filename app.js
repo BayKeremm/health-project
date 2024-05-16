@@ -1,6 +1,7 @@
 var chart = null;
 var global_start_goal = null;
 var global_end_goal = null;
+var month = 0;
 
 function check_current_date(date) {
     var todayDate = new Date();
@@ -158,29 +159,30 @@ function refreshSleepSchedules() {
             var wakeUpTime = [];
             var colors = [];
             for (var i = 0; i < response.data.length; i++) {
-                var diff;
-                var sleeptime = response.data[i]["sleep_time"]
-                var wakeuptime = response.data[i]["wake_up_time"]
+                var sleepDate = response.data[i]['sleep_date'];
+                var sleepMonth = parseInt(sleepDate.split('-')[1]); // Extract month from sleep date
+                console.log("sleep month is")
+                console.log(sleepMonth);
+                if (parseInt(month) === 0 || sleepMonth === parseInt(month)) { // Check if the month matches the selected month or if all months are selected
+                    var diff;
+                    var sleeptime = response.data[i]["sleep_time"]
+                    var wakeuptime = response.data[i]["wake_up_time"]
 
-                var a0 = sleeptime.split(':')
-                var a1 = wakeuptime.split(':')
+                    var a0 = sleeptime.split(':')
+                    var a1 = wakeuptime.split(':')
 
-                var mins0 = (+a0[0]) * 60 + (+a0[1]);
-                var mins1 = (+a1[0]) * 60 + (+a1[1]);
-                if (mins0 - mins1 > 0) diff = (24 - mins0 / 60) + mins1 / 60;
-                else diff = Math.abs(mins0 - mins1) / 60;
-                console.log('diff:', diff);
-                console.log('sleep time:', mins0);
-                console.log('wakeup time:', mins1);
-                x.push(response.data[i]['sleep_date']);
-                y.push(diff);
-                sleepTime.push(sleeptime);
-                wakeUpTime.push(wakeuptime);
-                var meetsGoal = checkSleepGoal(sleeptime, wakeuptime);
-                colors.push(meetsGoal ? 'rgba(54, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)');
+                    var mins0 = (+a0[0]) * 60 + (+a0[1]);
+                    var mins1 = (+a1[0]) * 60 + (+a1[1]);
+                    if (mins0 - mins1 > 0) diff = (24 - mins0 / 60) + mins1 / 60;
+                    else diff = Math.abs(mins0 - mins1) / 60;
+                    x.push(response.data[i]['sleep_date']);
+                    y.push(diff);
+                    sleepTime.push(sleeptime);
+                    wakeUpTime.push(wakeuptime);
+                    var meetsGoal = checkSleepGoal(sleeptime, wakeuptime);
+                    colors.push(meetsGoal ? 'rgba(54, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)');
+                }
             }
-            console.log('X:', x); // Log X data
-            console.log('Y:', y); // Log Y data
             chart.data.labels = x;
             chart.data.datasets[0].data = y;
             chart.data.datasets[0].sleepTime = sleepTime; // Storing sleep times with dataset
@@ -192,6 +194,66 @@ function refreshSleepSchedules() {
             alert('URI /sleep-schedules not properly implemented in Flask');
         });
 }
+
+//function refreshSleepSchedules() {
+    //var select = document.getElementById('user-select');
+    //var id = select.value;
+    //if (id === '') {
+        //console.log('No user');
+        //document.getElementById('sleep-schedule-div').style.visibility = 'hidden';
+        //return;
+    //}
+
+    //document.getElementById('sleep-schedule-div').style.visibility = 'visible';
+
+    //axios.get('sleep-schedules', {
+            //params: {
+                //id: id
+            //},
+            //responseType: 'json'
+        //})
+        //.then(function(response) {
+            //console.log('Received data:', response.data); // Log received data
+            //var x = [];
+            //var y = [];
+            //var sleepTime = [];
+            //var wakeUpTime = [];
+            //var colors = [];
+            //for (var i = 0; i < response.data.length; i++) {
+                //if(month == 0){
+                    //var diff;
+                    //var sleeptime = response.data[i]["sleep_time"]
+                    //var wakeuptime = response.data[i]["wake_up_time"]
+
+                    //var a0 = sleeptime.split(':')
+                    //var a1 = wakeuptime.split(':')
+
+                    //var mins0 = (+a0[0]) * 60 + (+a0[1]);
+                    //var mins1 = (+a1[0]) * 60 + (+a1[1]);
+                    //if (mins0 - mins1 > 0) diff = (24 - mins0 / 60) + mins1 / 60;
+                    //else diff = Math.abs(mins0 - mins1) / 60;
+                    //x.push(response.data[i]['sleep_date']);
+                    //y.push(diff);
+                    //sleepTime.push(sleeptime);
+                    //wakeUpTime.push(wakeuptime);
+                    //var meetsGoal = checkSleepGoal(sleeptime, wakeuptime);
+                    //colors.push(meetsGoal ? 'rgba(54, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)');
+                //}else{
+                    //// sleepdate format is like this 2024-05-12
+                    //// put only the ones with the month corresponding to the "month" global variable
+                //}
+            //}
+            //chart.data.labels = x;
+            //chart.data.datasets[0].data = y;
+            //chart.data.datasets[0].sleepTime = sleepTime; // Storing sleep times with dataset
+            //chart.data.datasets[0].wakeUpTime = wakeUpTime; // Storing wake up times with dataset
+            //chart.data.datasets[0].backgroundColor = colors;
+            //chart.update();
+        //})
+        //.catch(function(response) {
+            //alert('URI /sleep-schedules not properly implemented in Flask');
+        //});
+//}
 function refreshUsers() {
     axios.get('users', {
       responseType: 'json'
@@ -223,62 +285,127 @@ function refreshUsers() {
       alert('URI /users not properly implemented in Flask');
     });
   }
+function generateCalendar() {
+    var calendarDiv = document.getElementById('calendar');
+    var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var selectMonth = document.createElement('select');
+    selectMonth.id = 'select-month';
+    // Add an empty default option
+    var defaultOption = document.createElement('option');
+    defaultOption.value = 0;
+    defaultOption.textContent = 'Select Month...';
+    selectMonth.appendChild(defaultOption);
+    // Populate options with months
+    months.forEach(function(month, index) {
+        var option = document.createElement('option');
+        option.value = index + 1;
+        option.textContent = month;
+        selectMonth.appendChild(option);
+    });
+    // Add event listener to trigger refreshSleepSchedules when month is changed
+    selectMonth.addEventListener('change', function() {
+        month = selectMonth.value;
+        console.log(month)
+        refreshSleepSchedules();
+    });
+    calendarDiv.appendChild(selectMonth);
+}
 
 
+//function updateChartMonth(){
+//// set month global variable to the month number based on selected in drop down menu
+    //month = document.getElementById('select-month').value;
+    //refreshSleepSchedules();
+//}
 
 document.addEventListener('DOMContentLoaded', function() {
-
-    chart = new Chart(document.getElementById('sleep-schedule'), {
-        type: 'bar',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Sleep Schedule',
-                data: [],
-                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+    var chartData = {
+        labels: [],
+        datasets: [{
+          label: 'Sleep Schedule',
+          data: [],
+          backgroundColor: 'rgba(54, 162, 235, 0.5)'
+        }]
+      };
+      
+      var chartOptions = {
+        options: {     
+            scales: { 
+            xAxes: [{   
+              ticks: {
+                padding: 20
+              }
             }]
+          }}, 
+        animation: {
+          duration: 0 // Disable animations
         },
-        options: {
-            animation: {
-                duration: 0 // Disable animations
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Date'
             },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date'
-                    },
-                    ticks: {
-                        // Rotate the X label
-                        maxRotation: 45,
-                        minRotation: 45
-                    }
+            ticks: {
+              // Rotate the X label
+              maxRotation: 45,
+              minRotation: 45
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Hours slept'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                var sleepTime = context.dataset.sleepTime[context.dataIndex];
+                var wakeUpTime = context.dataset.wakeUpTime[context.dataIndex];
+                return `Sleep Time: ${sleepTime}, Wake-up Time: ${wakeUpTime}`;
+              }
+            }
+          },
+          zoom: {
+            pan: {
+                enabled: true,
+                mode: 'x'
+            },
+            zoom: {
+                pinch: {
+                    enabled: true       // Enable pinch zooming
                 },
-
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Date'
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            var sleepTime = context.dataset.sleepTime[context.dataIndex];
-                            var wakeUpTime = context.dataset.wakeUpTime[context.dataIndex];
-                            return `Sleep Time: ${sleepTime}, Wake-up Time: ${wakeUpTime}`;
-                        }
-                    }
-                }
+                wheel: {
+                    enabled: true       // Enable wheel zooming
+                },
+                drag: {
+                    enabled: true       // Enable wheel zooming
+                },
+                mode: 'x',
             }
         }
-    });
+    }
+};
+      
+      var chartElement = document.getElementById('sleep-schedule');
+      var chartContext = chartElement.getContext('2d');
+      
+      // Create the chart with your data and options
+      chart = new Chart(chartContext, {
+        type: 'bar',
+        data: chartData,
+        options: chartOptions
+      });
+
     refreshUsers();
+    generateCalendar();
 
     document.getElementById('user-select').addEventListener('change', getSleepGoal);
     document.getElementById('user-select').addEventListener('change', refreshSleepSchedules);
+    //document.getElementById('calendar').addEventListener('change', updateChartMonth);
 
 
 
