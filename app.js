@@ -327,13 +327,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('goal-end').value = '';
                 // You can close the modal here if needed
                 document.getElementById('goal-modal').style.display = 'none';
+                getSleepGoal();
+                refreshSleepSchedules();
             })
             .catch(function(error) {
                 // Handle error
                 console.error('Error saving sleep goal:', error);
                 // You can display an error message to the user if needed
             });
-            refreshSleepSchedules();
     });
 
 });
