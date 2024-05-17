@@ -39,6 +39,8 @@
       <input type="date" placeholder="yyyy-mm-dd" id="bedtime-date">
       <button class="green" id="sleep-schedule-button">Add</button>
       <p id="current-goal"></p>
+      <p id="warning-message" style="color: red; display: none;">Warning: You slept less than 7 hours!</p> <!-- New warning message element -->
+      
       <!-- Button to open the modal for setting sleep goal -->
       <div class="centered-button">
         <button class="green" id="set-goal-button" onclick="openGoalModal()">Set Sleep Goal</button>
@@ -75,7 +77,7 @@
             <button class="red" id="delete-data-confirm" onclick="deleteData()">Delete</button>
         </div>
       </div>
-
+        
       <div class="advice" id="advice">
         <p><strong>Did you know?</strong> <span id="advice-text"></span></p>
       </div>

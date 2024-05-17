@@ -503,6 +503,31 @@ document.addEventListener('DOMContentLoaded', function() {
         var sleepTime = document.getElementById('sleep-time-input').value;
         var wakeUpTime = document.getElementById('wake-up-time-input').value;
         var bedtimeDate = document.getElementById('bedtime-date').value;
+        
+        // Compute sleep duration
+        var a0 = sleepTime.split(':');
+        var a1 = wakeUpTime.split(':');
+        var mins0 = (+a0[0]) * 60 + (+a0[1]);
+        var mins1 = (+a1[0]) * 60 + (+a1[1]);
+        var diff;
+        if (mins0 > mins1) {
+            diff = (24 * 60 - mins0) + mins1;
+        } else {
+            diff = mins1 - mins0;
+        }
+        var hoursSlept = diff / 60;
+
+        console.log('Hours slept:', hoursSlept);
+
+        // Check if hours slept is less than 7
+        if (hoursSlept < 7) {
+            document.getElementById('warning-message').style.display = 'block';
+        } else {
+            document.getElementById('warning-message').style.display = 'none';
+        }
+
+        
+        
         if (sleepTime == '' || wakeUpTime == '' || bedtimeDate == '') {
             alert('Please provide both sleep time and wake up time');
         } else if (!check_current_date(bedtimeDate)) alert("Future bedtime date are not allowed");
