@@ -521,10 +521,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Check if hours slept is less than 7
         if (hoursSlept < 7) {
-            document.getElementById('warning-message').style.display = 'block';
+            document.getElementById('warning-message').innerText = 'You slept less than 7 hours! Lack of sleep can impair cognitive function, weaken the immune system, and increase the risk of chronic diseases.';
+            openWarningModal();
+        } else if (hoursSlept > 9) {
+            document.getElementById('warning-message').innerText = 'You slept more than 9 hours! Oversleeping can be linked to various health problems, including heart disease and diabetes.';
+            openWarningModal();
         } else {
-            document.getElementById('warning-message').style.display = 'none';
+            document.getElementById('warning-modal').style.display = 'none';
         }
+
 
         
         
@@ -580,6 +585,21 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
+});
+
+function openWarningModal() {
+    document.getElementById('warning-modal').style.display = 'block';
+}
+
+function closeWarningModal() {
+    document.getElementById('warning-modal').style.display = 'none';
+}
+
+// Close the modal when clicking outside of it
+window.addEventListener('click', function(event) {
+    if (event.target == document.getElementById('warning-modal')) {
+        document.getElementById('warning-modal').style.display = 'none';
+    }
 });
 
 

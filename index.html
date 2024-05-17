@@ -39,7 +39,6 @@
       <input type="date" placeholder="yyyy-mm-dd" id="bedtime-date">
       <button class="green" id="sleep-schedule-button">Add</button>
       <p id="current-goal"></p>
-      <p id="warning-message" style="color: red; display: none;">Warning: You slept less than 7 hours!</p> <!-- New warning message element -->
       
       <!-- Button to open the modal for setting sleep goal -->
       <div class="centered-button">
@@ -83,5 +82,15 @@
       </div>
     </div>
   </div>
+
+  <!-- Warning Modal -->
+  <div id="warning-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeWarningModal()">&times;</span>
+      <p><span id="warning-title" style="color: red;">Warning:</span> <span id="warning-message"></span></p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
