@@ -522,9 +522,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Check if hours slept is less than 7
         if (hoursSlept < 7) {
             document.getElementById('warning-message').innerText = 'You slept less than 7 hours! Lack of sleep can impair cognitive function, weaken the immune system, and increase the risk of chronic diseases.';
+            document.getElementById('consultation-message').style.display = 'block';
             openWarningModal();
         } else if (hoursSlept > 9) {
             document.getElementById('warning-message').innerText = 'You slept more than 9 hours! Oversleeping can be linked to various health problems, including heart disease and diabetes.';
+            document.getElementById('consultation-message').style.display = 'block';
             openWarningModal();
         } else {
             document.getElementById('warning-modal').style.display = 'none';
